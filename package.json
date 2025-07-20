@@ -1,0 +1,46 @@
+{
+  "name": "ac-lambda-deployment",
+  "version": "0.0.1",
+  "description": "Simple AWS Lambda deployment tool using AWS SDK v3",
+  "main": "index.js",
+  "bin": {
+    "lambda-deploy": "./index.js"
+  },
+  "author": "Mark Poepping (https://www.admiralcloud.com)",
+  "license": "MIT",
+  "packageManager": "yarn@1.22.22",
+  "keywords": [
+    "aws",
+    "lambda",
+    "deployment",
+    "serverless",
+    "aws-sdk-v3"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/admiralcloud/ac-lambda-deployment"
+  },
+  "bugs": {
+    "url": "https://github.com/admiralcloud/ac-lambda-deployment/issues"
+  },
+  "homepage": "https://github.com/admiralcloud/ac-lambda-deployment#readme",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "eslint index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.848.0",
+    "@aws-sdk/credential-provider-ini": "^3.848.0",
+    "archiver": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.31.0"
+  }
+}
