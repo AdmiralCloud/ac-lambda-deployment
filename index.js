@@ -114,7 +114,7 @@ class LambdaDeployer {
         
         const params = {
             FunctionName: config.functionName,
-            Runtime: config.runtime || 'nodejs18.x',
+            Runtime: config.runtime || 'nodejs22.x',
             Role: config.roleArn,
             Handler: config.handler || 'lambda.handler',
             Code: { ZipFile: zipBuffer },
@@ -129,26 +129,17 @@ class LambdaDeployer {
         return this.lambda.send(command)
     }
 
-    // Update existing Lambda function code with retry
-    async updateFunction(functionName, zipPath) {
-        const zipBuffer = fs.readFileSync(zipPath)
-        
-        const params = {
-            FunctionName: functionName,
-            ZipFile: zipBuffer
-        }
-
-        const command = new UpdateFunctionCodeCommand(params)
-        
-        // Retry logic for concurrent updates
+    // Generic retry logic for any command
+    async updateWithRetry(command, updateType) {
         for (let i = 0; i < 3; i++) {
             try {
-                return this.lambda.send(command)
+                return await this.lambda.send(command)
             }
             catch (err) {
                 if (err.name === 'ResourceConflictException' && i < 2) {
-                    console.log(`Function is being updated, waiting 30 seconds... (attempt ${i + 1}/3)`)
-                    await new Promise(resolve => setTimeout(resolve, 30000))
+                    const waitTime = (i + 1) * 30000
+                    console.log(`Function ${updateType} is being updated, waiting ${waitTime/1000} seconds... (attempt ${i + 1}/3)`)
+                    await new Promise(resolve => setTimeout(resolve, waitTime))
                     continue
                 }
                 throw err
@@ -156,34 +147,68 @@ class LambdaDeployer {
         }
     }
 
-    // Update function configuration (layers, environment, etc.) with retry
-    async updateFunctionConfig(config) {
-        const params = {
-            FunctionName: config.functionName,
-            Runtime: config.runtime,
-            Handler: config.handler,
-            Description: config.description,
-            Timeout: config.timeout,
-            MemorySize: config.memorySize,
-            Environment: config.environment ? { Variables: config.environment } : undefined,
-            Layers: config.layers || []
-        }
-
-        const command = new UpdateFunctionConfigurationCommand(params)
+    // Wait until function is in Active state and ready for next update
+    async waitForFunctionReady(functionName, maxWaitMs = 120000) {
+        const startTime = Date.now()
         
-        // Retry logic for concurrent updates
-        for (let i = 0; i < 3; i++) {
+        while (Date.now() - startTime < maxWaitMs) {
             try {
-                return this.lambda.send(command)
+                const result = await this.lambda.send(new GetFunctionCommand({ FunctionName: functionName }))
+                const state = result.Configuration?.State
+                const lastUpdateStatus = result.Configuration?.LastUpdateStatus
+                
+                if (state === 'Active' && lastUpdateStatus === 'Successful') {
+                    return
+                }
+                
+                if (lastUpdateStatus === 'Failed') {
+                    throw new Error('Previous update failed')
+                }
             }
             catch (err) {
-                if (err.name === 'ResourceConflictException' && i < 2) {
-                    console.log(`Function config is being updated, waiting 20 seconds... (attempt ${i + 1}/3)`)
-                    await new Promise(resolve => setTimeout(resolve, 20000))
-                    continue
+                if (err.message === 'Previous update failed') {
+                    throw err
                 }
-                throw err
+                // Ignore other errors during polling
             }
+            
+            await new Promise(resolve => setTimeout(resolve, 3000))
+        }
+        
+        throw new Error('Timeout waiting for function to be ready')
+    }
+
+    // Update function code, then config sequentially
+    async updateFunctionSequential(functionName, zipPath, config) {
+        const zipBuffer = fs.readFileSync(zipPath)
+        
+        // Step 1: Update code
+        console.log('Updating function code...')
+        const codeParams = {
+            FunctionName: functionName,
+            ZipFile: zipBuffer
+        }
+        
+        await this.updateWithRetry(new UpdateFunctionCodeCommand(codeParams), 'code')
+        
+        // Step 2: Wait for function to be ready, then update configuration
+        if (config.layers || config.environment || config.timeout || config.memorySize || config.description) {
+            console.log('Waiting for code update to complete...')
+            await this.waitForFunctionReady(functionName)
+            
+            const configParams = {
+                FunctionName: functionName,
+                Runtime: config.runtime || 'nodejs18.x',
+                Handler: config.handler || 'lambda.handler',
+                Description: config.description,
+                Timeout: config.timeout || 30,
+                MemorySize: config.memorySize || 128,
+                Environment: config.environment ? { Variables: config.environment } : undefined,
+                Layers: config.layers || []
+            }
+            
+            console.log('Updating function configuration...')
+            await this.updateWithRetry(new UpdateFunctionConfigurationCommand(configParams), 'configuration')
         }
     }
 
@@ -279,15 +304,11 @@ class LambdaDeployer {
             
             if (exists) {
                 console.log('Updating existing function...')
-                await this.updateFunction(functionName, zipPath)
                 
-                // Update function configuration (layers, environment, etc.)
-                if (config.layers || config.environment || config.timeout || config.memorySize) {
-                    console.log('Updating function configuration...')
-                    await this.updateFunctionConfig(config)
-                }
+                // Update function code and config sequentially
+                await this.updateFunctionSequential(functionName, zipPath, config)
                 
-                // Update SQS triggers
+                // Update SQS triggers (separate API)
                 if (config.sqsTriggers) {
                     console.log('Updating SQS triggers...')
                     await this.updateEventSourceMappings(functionName, config.sqsTriggers)
