@@ -1,6 +1,6 @@
 {
   "name": "ac-lambda-deployment",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Simple AWS Lambda deployment tool using AWS SDK v3",
   "main": "index.js",
   "bin": {
@@ -33,14 +33,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.848.0",
-    "@aws-sdk/credential-provider-ini": "^3.848.0",
+    "@aws-sdk/client-lambda": "^3.913.0",
+    "@aws-sdk/credential-provider-ini": "^3.913.0",
     "archiver": "^7.0.1"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.31.0"
+    "eslint": "^9.38.0"
   }
 }
