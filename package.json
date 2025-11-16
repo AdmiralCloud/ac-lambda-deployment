@@ -33,14 +33,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.913.0",
-    "@aws-sdk/credential-provider-ini": "^3.913.0",
+    "@aws-sdk/client-lambda": "^3.932.0",
+    "@aws-sdk/credential-provider-ini": "^3.932.0",
     "archiver": "^7.0.1"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "devDependencies": {
-    "eslint": "^9.38.0"
+    "eslint": "^9.39.1"
   }
 }
