@@ -33,15 +33,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.1014.0",
-    "@aws-sdk/client-sts": "^3.1014.0",
-    "@aws-sdk/credential-provider-ini": "^3.972.23",
+    "@aws-sdk/client-lambda": "^3.1024.0",
+    "@aws-sdk/client-sts": "^3.1024.0",
+    "@aws-sdk/credential-provider-ini": "^3.972.28",
     "archiver": "^7.0.1"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "devDependencies": {
+    "ac-semantic-release": "^1.0.1",
     "eslint": "^9.39.4"
   }
 }
