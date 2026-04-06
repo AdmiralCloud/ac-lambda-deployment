@@ -66,7 +66,7 @@ class LambdaDeployer {
             })
 
             // Install and add production dependencies
-            console.log('Installing production dependencies...')
+            console.warn('Installing production dependencies...')
             try {
                 // Detect package manager
                 const hasYarnLock = fs.existsSync(path.join(sourceDir, 'yarn.lock'))
@@ -138,7 +138,7 @@ class LambdaDeployer {
             catch (err) {
                 if (err.name === 'ResourceConflictException' && i < 2) {
                     const waitTime = (i + 1) * 30000
-                    console.log(`Function ${updateType} is being updated, waiting ${waitTime/1000} seconds... (attempt ${i + 1}/3)`)
+                    console.warn(`Function ${updateType} is being updated, waiting ${waitTime/1000} seconds... (attempt ${i + 1}/3)`)
                     await new Promise(resolve => setTimeout(resolve, waitTime))
                     continue
                 }
@@ -183,7 +183,7 @@ class LambdaDeployer {
         const zipBuffer = fs.readFileSync(zipPath)
         
         // Step 1: Update code
-        console.log('Updating function code...')
+        console.warn('Updating function code...')
         const codeParams = {
             FunctionName: functionName,
             ZipFile: zipBuffer
@@ -193,7 +193,7 @@ class LambdaDeployer {
         
         // Step 2: Wait for function to be ready, then update configuration
         if (config.layers || config.environment || config.timeout || config.memorySize || config.description) {
-            console.log('Waiting for code update to complete...')
+            console.warn('Waiting for code update to complete...')
             await this.waitForFunctionReady(functionName)
             
             const configParams = {
@@ -207,7 +207,7 @@ class LambdaDeployer {
                 Layers: config.layers || []
             }
             
-            console.log('Updating function configuration...')
+            console.warn('Updating function configuration...')
             await this.updateWithRetry(new UpdateFunctionConfigurationCommand(configParams), 'configuration')
         }
     }
@@ -230,7 +230,7 @@ class LambdaDeployer {
 
             if (existingMapping) {
                 // Update existing mapping
-                console.log(`Updating SQS trigger: ${trigger.queueArn}`)
+                console.warn(`Updating SQS trigger: ${trigger.queueArn}`)
                 const updateCommand = new UpdateEventSourceMappingCommand({
                     UUID: existingMapping.UUID,
                     BatchSize: trigger.batchSize || 10,
@@ -241,7 +241,7 @@ class LambdaDeployer {
             }
             else {
                 // Create new mapping
-                console.log(`Creating SQS trigger: ${trigger.queueArn}`)
+                console.warn(`Creating SQS trigger: ${trigger.queueArn}`)
                 const createCommand = new CreateEventSourceMappingCommand({
                     EventSourceArn: trigger.queueArn,
                     FunctionName: functionName,
@@ -257,7 +257,7 @@ class LambdaDeployer {
         const configuredArns = sqsTriggers.map(t => t.queueArn)
         for (const mapping of existing.EventSourceMappings || []) {
             if (!configuredArns.includes(mapping.EventSourceArn)) {
-                console.log(`Removing SQS trigger: ${mapping.EventSourceArn}`)
+                console.warn(`Removing SQS trigger: ${mapping.EventSourceArn}`)
                 const deleteCommand = new DeleteEventSourceMappingCommand({
                     UUID: mapping.UUID
                 })
@@ -292,44 +292,44 @@ class LambdaDeployer {
             throw new Error('functionName is required in configuration')
         }
 
-        console.log(`Deploying Lambda function: ${functionName}`)
+        console.warn(`Deploying Lambda function: ${functionName}`)
         
         // Create ZIP
         const zipPath = path.join(sourceDir, `${functionName}.zip`)
-        console.log('Creating deployment package...')
+        console.warn('Creating deployment package...')
         await this.createZip(sourceDir, zipPath, includes)
         
         try {
             const exists = await this.functionExists(functionName)
             
             if (exists) {
-                console.log('Updating existing function...')
+                console.warn('Updating existing function...')
                 
                 // Update function code and config sequentially
                 await this.updateFunctionSequential(functionName, zipPath, config)
                 
                 // Update SQS triggers (separate API)
                 if (config.sqsTriggers) {
-                    console.log('Updating SQS triggers...')
+                    console.warn('Updating SQS triggers...')
                     await this.updateEventSourceMappings(functionName, config.sqsTriggers)
                 }
                 
-                console.log('Function updated successfully!')
+                console.warn('Function updated successfully!')
             }
             else {
                 if (!roleArn) {
                     throw new Error('roleArn is required for creating new functions')
                 }
-                console.log('Creating new function...')
+                console.warn('Creating new function...')
                 await this.createFunction({ ...config, zipPath })
                 
                 // Add SQS triggers after function creation
                 if (config.sqsTriggers) {
-                    console.log('Creating SQS triggers...')
+                    console.warn('Creating SQS triggers...')
                     await this.updateEventSourceMappings(functionName, config.sqsTriggers)
                 }
                 
-                console.log('Function created successfully!')
+                console.warn('Function created successfully!')
             }
         }
         finally {
