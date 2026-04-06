@@ -1,6 +1,9 @@
-lint-fix:
-	./node_modules/.bin/eslint lambda.js --fix
+lint-check:
+	./node_modules/.bin/eslint
 	
+lint-fix:
+	./node_modules/.bin/eslint --fix
+
 commit:
 	@node ./node_modules/ac-semantic-release/lib/commit.js
 

@@ -2,6 +2,8 @@
 
 Simple AWS Lambda deployment tool using AWS SDK v3. Deploys code, manages layers, and configures SQS triggers without the complexity of full infrastructure-as-code tools.
 
+[![CodeQL](https://github.com/AdmiralCloud/ac-lambda-deployment/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/AdmiralCloud/ac-lambda-deployment/actions/workflows/github-code-scanning/codeql)
+
 ## Features
 
 - **Code-focused deployment** - Updates Lambda function code quickly
