@@ -193,7 +193,7 @@ describe('LambdaDeployer', () => {
             finally { restore() }
         })
 
-        it('throws immediately for non-conflict errors', async () => {
+        it('throws immediately for non-conflict errors, propagating name and message', async () => {
             const deployer = new LambdaDeployer()
             let attempts = 0
             deployer.lambda = {
@@ -205,11 +205,10 @@ describe('LambdaDeployer', () => {
                 }
             }
 
-            await assert.rejects(
-                () => deployer.updateWithRetry({}, 'code'),
-                /access denied/
-            )
+            const err = await deployer.updateWithRetry({}, 'code').catch(e => e)
             assert.equal(attempts, 1)
+            assert.equal(err.name, 'AccessDeniedException')
+            assert.equal(err.message, 'access denied')
         })
     })
 
@@ -257,7 +256,7 @@ describe('LambdaDeployer', () => {
             finally { restore() }
         })
 
-        it('ignores transient polling errors and keeps waiting', async () => {
+        it('ignores a single transient polling error and keeps waiting', async () => {
             const deployer = new LambdaDeployer()
             const restore = patchTimeout()
             let calls = 0
@@ -272,6 +271,25 @@ describe('LambdaDeployer', () => {
             try {
                 await assert.doesNotReject(() => deployer.waitForFunctionReady('test'))
                 assert.equal(calls, 2)
+            }
+            finally { restore() }
+        })
+
+        it('ignores multiple consecutive transient polling errors before eventual success', async () => {
+            const deployer = new LambdaDeployer()
+            const restore = patchTimeout()
+            let calls = 0
+            deployer.lambda = {
+                send: async () => {
+                    calls++
+                    if (calls < 4) throw new Error(`transient error ${calls}`)
+                    return { Configuration: { State: 'Active', LastUpdateStatus: 'Successful' } }
+                }
+            }
+
+            try {
+                await assert.doesNotReject(() => deployer.waitForFunctionReady('test'))
+                assert.equal(calls, 4)
             }
             finally { restore() }
         })
