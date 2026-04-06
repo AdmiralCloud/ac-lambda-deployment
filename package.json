@@ -1,6 +1,6 @@
 {
   "name": "ac-lambda-deployment",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Simple AWS Lambda deployment tool using AWS SDK v3",
   "main": "index.js",
   "bin": {
