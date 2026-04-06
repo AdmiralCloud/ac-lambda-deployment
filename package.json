@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "lint": "eslint index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/**/*.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.1024.0",
@@ -42,7 +42,14 @@
     "node": ">=24.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "ac-semantic-release": "^1.0.1",
-    "eslint": "^9.39.4"
+    "eslint": "^10.2.0",
+    "globals": "^17.4.0",
+    "mocha": "^11.7.5"
+  },
+  "resolutions": {
+    "mocha/serialize-javascript": "^7.0.5",
+    "mocha/diff": "^8.0.3"
   }
 }
