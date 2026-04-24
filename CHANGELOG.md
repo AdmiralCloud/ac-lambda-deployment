@@ -1,3 +1,12 @@
+## [0.0.11](ac-lambda-deployment/compare/v0.0.10..v0.0.11) (2026-04-24 17:56:55)
+
+
+### Bug Fix
+
+
+* **App:** Use temp dir for production install | MP | [09762eebb44f8068d7987425855d2093ed3126c4](ac-lambda-deployment/commit/09762eebb44f8068d7987425855d2093ed3126c4)    
+Run production install in temp dir to avoid destroying source node_modules  
+Related issues:
 ## [0.0.10](ac-lambda-deployment/compare/v0.0.9..v0.0.10) (2026-04-24 17:43:45)
 
 
