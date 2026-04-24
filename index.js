@@ -6,6 +6,7 @@ const fs = require('fs')
 const path = require('path')
 const archiver = require('archiver')
 const { execSync } = require('child_process')
+const os = require('os')
 
 class LambdaDeployer {
     constructor(options = {}) {
@@ -47,12 +48,19 @@ class LambdaDeployer {
         return new Promise((resolve, reject) => {
             const output = fs.createWriteStream(outputPath)
             const archive = archiver('zip', { zlib: { level: 9 } })
+            let tmpDir = null
 
-            output.on('close', () => resolve(outputPath))
+            output.on('close', () => {
+                if (tmpDir) {
+                    try { fs.rmSync(tmpDir, { recursive: true, force: true }) }
+                    catch { /* ignore cleanup errors */ }
+                }
+                resolve(outputPath)
+            })
             archive.on('error', reject)
 
             archive.pipe(output)
-            
+
             // Add specified files only
             includes.forEach(pattern => {
                 const fullPath = path.join(sourceDir, pattern)
@@ -65,26 +73,31 @@ class LambdaDeployer {
                 }
             })
 
-            // Install and add production dependencies
+            // Install production dependencies in a temp dir so the source
+            // project's node_modules (and devDeps) are never touched
             console.warn('Installing production dependencies...')
             try {
-                // Detect package manager
                 const hasYarnLock = fs.existsSync(path.join(sourceDir, 'yarn.lock'))
                 const hasPnpmLock = fs.existsSync(path.join(sourceDir, 'pnpm-lock.yaml'))
-                
+
+                tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lambda-deploy-'))
+                fs.copyFileSync(path.join(sourceDir, 'package.json'), path.join(tmpDir, 'package.json'))
+
                 let installCmd
                 if (hasYarnLock) {
+                    fs.copyFileSync(path.join(sourceDir, 'yarn.lock'), path.join(tmpDir, 'yarn.lock'))
                     installCmd = 'yarn install --production --silent'
                 }
                 else if (hasPnpmLock) {
+                    fs.copyFileSync(path.join(sourceDir, 'pnpm-lock.yaml'), path.join(tmpDir, 'pnpm-lock.yaml'))
                     installCmd = 'pnpm install --production'
                 }
                 else {
                     installCmd = 'npm install --production --silent'
                 }
-                
-                execSync(installCmd, { cwd: sourceDir })
-                archive.directory(path.join(sourceDir, 'node_modules'), 'node_modules')
+
+                execSync(installCmd, { cwd: tmpDir })
+                archive.directory(path.join(tmpDir, 'node_modules'), 'node_modules')
             }
             catch {
                 console.warn('Warning: dependency installation failed, continuing without dependencies')
