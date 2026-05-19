@@ -1,3 +1,18 @@
+## [0.0.12](ac-lambda-deployment/compare/v0.0.11..v0.0.12) (2026-05-19 14:16:28)
+
+
+### Bug Fix
+
+
+* **App:** Package updates | MP | [d402b9d42b796d367c6ed1d736a399922af15baf](ac-lambda-deployment/commit/d402b9d42b796d367c6ed1d736a399922af15baf)    
+Package updates  
+Related issues:
+### Tests
+
+
+* **App:** Improved test coverage | MP | [772cff64851072bc3555fb2be9916a3123424cc4](ac-lambda-deployment/commit/772cff64851072bc3555fb2be9916a3123424cc4)    
+Improved test coverage  
+Related issues:
 ## [0.0.11](ac-lambda-deployment/compare/v0.0.10..v0.0.11) (2026-04-24 17:56:55)
 
 
