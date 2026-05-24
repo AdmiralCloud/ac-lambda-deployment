@@ -33,10 +33,10 @@
     "test": "mocha test/**/*.test.js"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.1049.0",
-    "@aws-sdk/client-sts": "^3.1049.0",
-    "@aws-sdk/credential-provider-ini": "^3.972.42",
-    "@aws-sdk/credential-provider-sso": "^3.972.42",
+    "@aws-sdk/client-lambda": "^3.1053.0",
+    "@aws-sdk/client-sts": "^3.1053.0",
+    "@aws-sdk/credential-provider-ini": "^3.972.43",
+    "@aws-sdk/credential-provider-sso": "^3.972.43",
     "archiver": "^7.0.1"
   },
   "engines": {
@@ -47,7 +47,7 @@
     "ac-semantic-release": "^1.0.2",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
-    "mocha": "^11.7.5"
+    "mocha": "^11.7.6"
   },
   "resolutions": {
     "mocha/serialize-javascript": "^7.0.5",
