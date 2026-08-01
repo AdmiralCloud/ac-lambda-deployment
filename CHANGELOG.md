@@ -1,3 +1,11 @@
+## [0.0.16](ac-lambda-deployment/compare/v0.0.15..v0.0.16) (2026-08-01 14:29:29)
+
+
+### Bug Fix
+
+
+* **App:** Package updates | MP | [a9fb05c7c9843beadcb7d5ee2a1b87730c7d84c0](ac-lambda-deployment/commit/a9fb05c7c9843beadcb7d5ee2a1b87730c7d84c0)    
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 ## [0.0.15](ac-lambda-deployment/compare/v0.0.14..v0.0.15) (2026-07-12 07:47:19)
 
 
